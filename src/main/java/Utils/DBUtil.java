@@ -9,6 +9,10 @@ private static Connection conn = null;
 private static String URL = null;
 private static String LOGIN = null;
 private static String PASSWORD = null;
+    private static Statement stmt;
+
+    private static ResultSet resultSet;
+    private static CachedRowSetImpl crs;
 public static String getURL(){
     return "jdbc:mysql://" + Lab.getDbPort() +"/" + Lab.getDbName() + "?autoReconnect=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC";
 }
@@ -18,6 +22,7 @@ public static String getLOGIN(){
 public static String getPASSWORD(){
     return "root";
 }
+
     public static void dbConnect() {
     //throws SQLException, ClassNotFoundException
 
@@ -43,9 +48,9 @@ System.out.print("conn set");
     }
     public static ResultSet dbExecuteQuery(String queryStmt) throws SQLException, ClassNotFoundException {
         //Declare statement, resultSet and CachedResultSet as null
-        Statement stmt = null;
-        ResultSet resultSet = null;
-        CachedRowSetImpl crs = null;
+        stmt = null;
+        resultSet = null;
+        crs = null;
         try {
             //Connect to DB (Establish Oracle Connection)
             dbConnect();

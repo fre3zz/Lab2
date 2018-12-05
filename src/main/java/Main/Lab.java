@@ -233,7 +233,7 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         doccol1.setHgrow(Priority.ALWAYS);
         ColumnConstraints doccol2 = new ColumnConstraints(150,150,200);
         ColumnConstraints doccol3 = new ColumnConstraints(200,500, Double.MAX_VALUE);
-        patientsGridPane.getColumnConstraints().addAll(doccol1, doccol2, doccol3);
+        doctorPane.getColumnConstraints().addAll(doccol1, doccol2, doccol3);
         //Table view for analysis list Col#1
 
         VBox vbox1 = new VBox();
@@ -358,9 +358,18 @@ docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) 
             catch (IOException exc){}
         });
         //Check box in menu action
+
         docMenuItem.setOnAction((e)->{
-            if(docMenuItem.isSelected())doctorStage.show();
-            else doctorStage.hide();
+
+            if(docMenuItem.isSelected()) {
+                Stage docSt = StagesFactory.doctorStage();
+                docSt.show();
+            }
+            else {
+                for(Stage st: stages){
+                    if(st.getTitle().equals("Doctor list")) st.close();
+                }
+            }
         });
 
         //Final scene managing
@@ -380,7 +389,7 @@ docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) 
 
         //closing all added to array Stages
         primaryStage.setOnCloseRequest((e) -> {
-            try(OutputStream os = new FileOutputStream("config.properties")){
+            /*try(OutputStream os = new FileOutputStream("config.properties")){
                 properties.setProperty("DocWindowX", Double.toString(doctorStage.getX()));
                 properties.setProperty("DocWindowY", Double.toString(doctorStage.getY()));
                 properties.setProperty("DocWindowWidth", Double.toString(doctorStage.getWidth()));
@@ -388,6 +397,7 @@ docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) 
                 properties.store(os,null);
             }
             catch (IOException exc){}
+            */
             for(Stage x : stages){
                 System.out.println(x);
             x.close();

@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DoctorDAO {
+    private static ObservableList<Doctor> docList;
     public static Doctor searchDoctor (String docId) throws SQLException, ClassNotFoundException {
         //Declare a SELECT statement
         String selectStmt = "SELECT * FROM doctors WHERE doc_id="+docId;
@@ -52,7 +53,8 @@ public class DoctorDAO {
             ResultSet rsEmps = DBUtil.dbExecuteQuery(selectStmt);
 
             //Send ResultSet to the getEmployeeList method and get employee object
-            ObservableList<Doctor> docList = getDoctorList(rsEmps);
+            if(docList!=null)docList.clear();
+            docList = getDoctorList(rsEmps);
 
             //Return employee object
             return docList;

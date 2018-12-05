@@ -2,29 +2,32 @@ package Main;
 
 import Classes.Doctor;
 import Classes.DoctorDAO;
+import static Utils.DataOperations.*;
 import Main.Lab;
 import Utils.Corrections;
 import Utils.DBUtil;
 import Utils.Validations;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class StagesFactory {
+    private static boolean addDoctorStageOpened = false;
+    private static boolean editDoctorStageOpened = false;
+
     public static Stage addNewAnalysisStage(){
         Stage newAnStage = new Stage();
         newAnStage.setTitle("Add new analysis");
@@ -375,4 +378,177 @@ add.setOnAction((e)  -> {
         return newStage;
 
     }
+    public static Stage doctorStage(){
+        Stage doctorStage = new Stage();
+        Lab.stages.add(doctorStage);
+        doctorStage.setTitle("Doctor list");
+        doctorStage.initStyle(StageStyle.UTILITY);
+        //doctorStage.maxHeightProperty().bind(Lab.primaryStage.heightProperty().subtract(60));
+        //Not allowing moving Scene to high
+        doctorStage.yProperty().addListener((ov, nv, olv) -> {
+            if(doctorStage.getY() <= 60) doctorStage.setY(60);
+        });
+        double DocWindowX = 0;
+        double DocWindowY = 0;
+        double DocWindowHeight = 0;
+        double DocWindowWidth = 0;
+        try(InputStream is = new FileInputStream("config.properties")){
+            Properties props = Lab.getProperties();
+            props.load(is);
+            DocWindowX = Double.parseDouble(props.getProperty("DocWindowX"));
+            DocWindowY = Double.parseDouble(props.getProperty("DocWindowY"));
+            DocWindowWidth = Double.parseDouble(props.getProperty("DocWindowWidth"));
+            DocWindowHeight = Double.parseDouble(props.getProperty("DocWindowHeight"));
+            //dbPort = properties.getProperty("DBport");
+            //dbName = properties.getProperty("DBname");
+        }
+        catch (IOException e){}
+
+
+        doctorStage.setHeight(DocWindowHeight);
+        doctorStage.setWidth(DocWindowWidth);
+        doctorStage.setY(DocWindowY);
+        doctorStage.setX(DocWindowX);
+        //doctorPane
+        GridPane doctorPane = new GridPane();
+        doctorPane.setVgap(10);
+        doctorPane.setHgap(10);
+        doctorPane.setPadding(new Insets(5));
+        ColumnConstraints doccol1 = new ColumnConstraints();
+        doccol1.setHgrow(Priority.ALWAYS);
+        ColumnConstraints doccol2 = new ColumnConstraints(150,150,200);
+        ColumnConstraints doccol3 = new ColumnConstraints(200,500, Double.MAX_VALUE);
+        doctorPane.getColumnConstraints().addAll(doccol1, doccol2, doccol3);
+        //Table view for analysis list Col#1
+
+        VBox vbox1 = new VBox();
+        vbox1.setSpacing(20);
+        HBox hbox1 = new HBox();
+        hbox1.setSpacing(10);
+        TextField docSearchField = new TextField();
+        hbox1.getChildren().addAll(new Text("Search:"), docSearchField);
+        Button refreshTable = new Button();
+        try {
+            populateDoctorList();
+        }
+        catch (Exception e){}
+
+        TableView docTableView = new TableView();
+
+        docTableView.setPrefWidth(650);
+
+        docTableView.setItems(getDoctorSortedList(getDoctorList(), docSearchField));
+
+        //doctorList.add(new Classes.Doctor("123",",", "123"));
+        TableColumn<Doctor, String> NameCol = new TableColumn<>("Classes.Doctor");
+        NameCol.setCellValueFactory(new PropertyValueFactory("NameSurname"));
+        NameCol.setPrefWidth(docTableView.getPrefWidth() * 0.8);
+
+        TableColumn<Doctor, String> depCol = new TableColumn<>("Department");
+        depCol.setCellValueFactory(new PropertyValueFactory("department"));
+        depCol.setPrefWidth(docTableView.getPrefWidth() *0.2);
+
+
+
+        docTableView.getColumns().setAll(NameCol, depCol);
+        docTableView.prefHeightProperty().bind(doctorStage.heightProperty());
+
+        refreshTable.setOnAction((e) -> {
+            try {
+                populateDoctorList();
+                //doctorList.filtered()
+
+                docTableView.setItems(getDoctorSortedList(getDoctorList(), docSearchField));
+                System.gc();
+
+            }
+            catch (Exception exc){}
+        });
+
+        vbox1.getChildren().addAll(hbox1, docTableView, refreshTable);
+        doctorPane.add(vbox1, 0,0);
+
+        //VBOX with labels Col#2
+        VBox textBoxDoc = new VBox();
+        Text docNameText = new Text("ФИО врача:");
+        Text departmentText = new Text("Отделение:");
+        Text phoneText = new Text("Телефон:");
+
+
+        //Button for new Analysis
+        Button addDocButton = new Button("ADD Doctor");
+        addDocButton.prefWidthProperty().bind(doccol2.prefWidthProperty());
+        addDocButton.prefHeightProperty().bind(addDocButton.prefWidthProperty());
+        addDocButton.setOnAction((e) ->{
+            if(!addDoctorStageOpened) {
+                System.out.println("add button clicked");
+                addDoctorStageOpened = true;
+                Stage newStage = StagesFactory.addNewDocStage();
+                newStage.setAlwaysOnTop(true);
+                Lab.stages.add(newStage);
+                newStage.show();
+
+            }
+        });
+
+        textBoxDoc.getChildren().addAll(docNameText, departmentText, phoneText, addDocButton);
+        doctorPane.add(textBoxDoc, 1, 0);
+
+        VBox docLabelBox = new VBox();
+        Label docNameLabel = new Label();
+        Label docDepartmentLabel = new Label();
+        Label docPhoneLabel = new Label();
+
+        docLabelBox.getChildren().addAll(docNameLabel, docDepartmentLabel, docPhoneLabel);
+        doctorPane.add(docLabelBox, 2, 0);
+        doctorStage.setAlwaysOnTop(true);
+        docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) ->{
+                    if(o != null && o.getValue()!= null) {
+                        Doctor selected = (Doctor) docTableView.getSelectionModel().getSelectedItem();
+                        docNameLabel.textProperty().bind(selected.NameSurnameProperty());
+                        docDepartmentLabel.textProperty().bind(selected.departmentProperty());
+                        if(selected.phoneNumberProperty().get() != null){
+                            docPhoneLabel.textProperty().bind(selected.phoneNumberProperty());
+                        }
+
+                    }
+
+                }
+        );
+        docTableView.setOnMouseClicked((e) -> {
+            if(!e.isPrimaryButtonDown()&& e.getClickCount() == 2 && !editDoctorStageOpened){
+                Doctor selected = (Doctor) docTableView.getSelectionModel().getSelectedItem();
+                if(selected != null) {
+                    Stage st = StagesFactory.editDocStage(selected);
+                    editDoctorStageOpened = true;
+                    st.show();
+
+                }
+                docTableView.getSelectionModel().clearSelection();
+            }
+
+
+        });
+
+        Scene doctorScene = new Scene(doctorPane);
+        doctorStage.setScene(doctorScene);
+
+        doctorStage.setOnCloseRequest((e) -> {
+            doctorStage.close();
+            //docMenuItem.setSelected(false);
+            try(OutputStream os = new FileOutputStream("config.properties")){
+                Lab.getProperties().setProperty("DocWindowX", Double.toString(doctorStage.getX()));
+                Lab.getProperties().setProperty("DocWindowY", Double.toString(doctorStage.getY()));
+                Lab.getProperties().setProperty("DocWindowWidth", Double.toString(doctorStage.getWidth()));
+                Lab.getProperties().setProperty("DocWindowHeight", Double.toString(doctorStage.getHeight()));
+                Lab.getProperties().store(os,null);
+            }
+            catch (IOException exc){}
+        });
+        //Check box in menu action
+        return doctorStage;
+
+    }
+
+
 }
