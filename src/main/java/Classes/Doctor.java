@@ -12,16 +12,16 @@ public class Doctor {
     private StringProperty NameSurname;
     private StringProperty department;
     private StringProperty phoneNumber;
-    private IntegerProperty id;
+    private StringProperty id;
 
-    public final IntegerProperty idProperty(){
+    public final StringProperty idProperty(){
         if(id == null){
-            id = new SimpleIntegerProperty();
+            id = new SimpleStringProperty();
         }
         return id;
     }
-    public final void setId(int id){ idProperty().set(id);}
-    public final int getId(){return idProperty().get();}
+    public final void setId(String id){ idProperty().set(id);}
+    public final String getId(){return idProperty().get();}
     public final void setNameSurname(String nameSurname){
         NameSurnameProperty().set(nameSurname);
     }
@@ -60,15 +60,20 @@ public class Doctor {
     }
     return phoneNumber;
     }
-    public Doctor(int id, String name, String department, String phoneN){
+    public Doctor(String id, String name, String department, String phoneN){
         setId(id);
+        setNameSurname(name);
+        setDepartment(department);
+        setPhoneNumber(phoneN);
+    }
+    public Doctor(String name, String department, String phoneN){
         setNameSurname(name);
         setDepartment(department);
         setPhoneNumber(phoneN);
     }
 
     public Doctor(){
-        setId(0);
+        setId("");
         setNameSurname("");
         setDepartment("");
         setPhoneNumber("");

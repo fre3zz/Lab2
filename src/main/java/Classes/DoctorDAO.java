@@ -34,7 +34,7 @@ public class DoctorDAO {
         Doctor doctor = null;
         if (rs.next()) {
             doctor = new Doctor();
-            doctor.setId(rs.getInt("DOC_ID"));
+            doctor.setId(Integer.toString(rs.getInt("DOC_ID")));
             doctor.setNameSurname(rs.getString("NAME"));
             doctor.setDepartment(rs.getString("DEPARTMENT"));
             doctor.setPhoneNumber(rs.getString("PHONE"));
@@ -71,7 +71,7 @@ public class DoctorDAO {
 
         while (rs.next()) {
             Doctor doctor = new Doctor();
-            doctor.setId(rs.getInt("DOC_ID"));
+            doctor.setId(Integer.toString(rs.getInt("DOC_ID")));
             doctor.setNameSurname(rs.getString("NAME"));
             doctor.setDepartment(rs.getString("DEPARTMENT"));
             doctor.setPhoneNumber(rs.getString("PHONE"));
@@ -81,22 +81,20 @@ public class DoctorDAO {
         //return empList (ObservableList of Employees)
         return docList;
     }
-    public static void insertDoc (String name, String department) throws SQLException, ClassNotFoundException {
+    public static void insertDoc (String name, String department, String phoneNumber) throws SQLException, ClassNotFoundException {
         //Declare a DELETE statement
-        /*String updateStmt =
-                "BEGIN\n" +
-                        "INSERT INTO doctors\n" +
-                        "(DOC_ID, NAME, DEPARTMENT)\n" +
-                        "VALUES\n" +
-                        "(sequence_employee.nextval, '"+name+"', '"+department+"');\n" +
-                        "END;";
-*/
-        String updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT) values ('"+name+"', '"+department+"')";
+        String updateStmt= null;
+        if(phoneNumber == null) {
+           updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT) values ('" + name + "', '" + department + "')";
+        }
+        else{
+            updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT, PHONE) values ('" + name + "', '" + department + "', '" + phoneNumber + "')" ;
+        }
         //Execute DELETE operation
         try {
             DBUtil.dbExecuteUpdate(updateStmt);
         } catch (SQLException e) {
-            System.out.print("Error occurred while DELETE Operation: " + e);
+            System.out.print("Error occurred while INSERT Operation: " + e);
             //throw e;
         }
     }

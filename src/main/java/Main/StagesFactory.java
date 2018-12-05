@@ -27,6 +27,8 @@ import java.util.Properties;
 public class StagesFactory {
     private static boolean addDoctorStageOpened = false;
     private static boolean editDoctorStageOpened = false;
+    static TableView docTableView;
+
 
     public static Stage addNewAnalysisStage(){
         Stage newAnStage = new Stage();
@@ -99,7 +101,7 @@ public class StagesFactory {
         gp.add(cancel, 0, 3);
 cancel.setPrefHeight(40);
         cancel.setOnAction((e) -> {
-            Lab.setAddDoctorStageOpened(false);
+            addDoctorStageOpened = false;
             newStage.close();
             Lab.stages.remove(newStage);
         });
@@ -121,7 +123,7 @@ cancel.setPrefHeight(40);
         add.setDisable(true);
 
 nameTextField.textProperty().addListener((ov, o, nv) -> {
-nameTextField.setText(Corrections.nameCorrection(nv));
+//nameTextField.setText(Corrections.nameCorrection(nv));
 
 
     if(Validations.isNameValid(nameTextField.textProperty().get())
@@ -135,7 +137,7 @@ nameTextField.setText(Corrections.nameCorrection(nv));
 });
 
 departmentTextField.textProperty().addListener((ov, o, nv) -> {
-    departmentTextField.setText(Corrections.departmentCorrection(nv));
+    //departmentTextField.setText(Corrections.departmentCorrection(nv));
     if(Validations.isNameValid(nameTextField.textProperty().get())
             && Validations.isDepartmentValid(departmentTextField.textProperty().get())
             && Validations.isPhoneValid(phoneTextField.textProperty().get()))
@@ -146,7 +148,7 @@ departmentTextField.textProperty().addListener((ov, o, nv) -> {
 });
 
 phoneTextField.textProperty().addListener((ov, o, nv) -> {
-             phoneTextField.setText(Corrections.phoneCorrection(nv));
+             //phoneTextField.setText(Corrections.phoneCorrection(nv));
 
              if(Validations.isNameValid(nameTextField.textProperty().get())
                      && Validations.isDepartmentValid(departmentTextField.textProperty().get())
@@ -160,16 +162,28 @@ phoneTextField.textProperty().addListener((ov, o, nv) -> {
 
 
 add.setOnAction((e)  -> {
-    Doctor doc = new Doctor(0, nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
-    if(!Doctor.checkPresence(Lab.getDoctorList(), doc)){
-        Lab.getDoctorList().add(new Doctor(0, nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText()));
+    Doctor doc = new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
+    if(!Doctor.checkPresence(getDoctorList(), doc)){
+        //getDoctorList().add(new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText()));
         try {
-            DoctorDAO.insertDoc(nameTextField.getText(), departmentTextField.getText());
+            DoctorDAO.insertDoc(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
+            try {
+                populateDoctorList();
+                docTableView.setItems(getDoctorSortedList());
+
+
+
+            }
+            catch (Exception exc){}
 
         }
         catch (Exception exc){}
+
+
+
         newStage.close();
-        Lab.setAddDoctorStageOpened(false);
+
+        addDoctorStageOpened = false;
         Lab.stages.remove(newStage);
     }
     else{
@@ -183,8 +197,8 @@ add.setOnAction((e)  -> {
 
         newStage.setScene(sc);
         newStage.setOnCloseRequest((e) -> {
+addDoctorStageOpened = false;
 
-            Lab.setAddDoctorStageOpened(false);
             newStage.close();
             Lab.stages.remove(newStage);
         });
@@ -213,9 +227,6 @@ add.setOnAction((e)  -> {
         ColumnConstraints cc1 = new ColumnConstraints();
         ColumnConstraints cc2 = new ColumnConstraints();
         gp.getColumnConstraints().addAll(cc1,cc2);
-
-
-
         Text nameText = new Text("ФИО врача:");
         gp.add(nameText, 0,0);
         Text departmentText = new Text("Отделение:");
@@ -289,10 +300,11 @@ add.setOnAction((e)  -> {
         });
         add.setOnAction((e) -> {
 
-            Doctor doc = new Doctor(0, nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
-            if(!Doctor.checkPresence(Lab.getDoctorList(), doc)){
+            Doctor doc = new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
+            if(!Doctor.checkPresence(getDoctorList(), doc)){
 
-                Lab.setEditDoctorStageOpened(false);
+                editDoctorStageOpened = false;
+
                 newStage.close();
 
                 Lab.stages.remove(newStage);
@@ -399,8 +411,7 @@ add.setOnAction((e)  -> {
             DocWindowY = Double.parseDouble(props.getProperty("DocWindowY"));
             DocWindowWidth = Double.parseDouble(props.getProperty("DocWindowWidth"));
             DocWindowHeight = Double.parseDouble(props.getProperty("DocWindowHeight"));
-            //dbPort = properties.getProperty("DBport");
-            //dbName = properties.getProperty("DBname");
+
         }
         catch (IOException e){}
 
@@ -433,17 +444,31 @@ add.setOnAction((e)  -> {
         }
         catch (Exception e){}
 
-        TableView docTableView = new TableView();
-
+        //TableView docTableView = new TableView();
+        docTableView = new TableView();
         docTableView.setPrefWidth(650);
 
-        docTableView.setItems(getDoctorSortedList(getDoctorList(), docSearchField));
+        docSearchField.textProperty().addListener((ov, o, nv) -> {
+            getDoctorFilteredList().setPredicate(doctor -> {
+                if (nv == null || nv.equals("")) {
+                    return true;
+                }
+                String filter = nv.toLowerCase();
+                if (doctor.getNameSurname().toLowerCase().contains(filter)) {
+                    return true;
+                } else if (doctor.getDepartment().toLowerCase().contains(filter)) {
+                    return true;
+                } else return false;
 
-        //doctorList.add(new Classes.Doctor("123",",", "123"));
+
+            });
+
+        });
+
+        docTableView.setItems(getDoctorSortedList());
         TableColumn<Doctor, String> NameCol = new TableColumn<>("Classes.Doctor");
         NameCol.setCellValueFactory(new PropertyValueFactory("NameSurname"));
         NameCol.setPrefWidth(docTableView.getPrefWidth() * 0.8);
-
         TableColumn<Doctor, String> depCol = new TableColumn<>("Department");
         depCol.setCellValueFactory(new PropertyValueFactory("department"));
         depCol.setPrefWidth(docTableView.getPrefWidth() *0.2);
@@ -456,11 +481,10 @@ add.setOnAction((e)  -> {
         refreshTable.setOnAction((e) -> {
             try {
                 populateDoctorList();
-                //doctorList.filtered()
+                docTableView.setItems(getDoctorSortedList());
 
-                docTableView.setItems(getDoctorSortedList(getDoctorList(), docSearchField));
+
                 System.gc();
-
             }
             catch (Exception exc){}
         });
@@ -470,6 +494,7 @@ add.setOnAction((e)  -> {
 
         //VBOX with labels Col#2
         VBox textBoxDoc = new VBox();
+        Text idText = new Text("id:");
         Text docNameText = new Text("ФИО врача:");
         Text departmentText = new Text("Отделение:");
         Text phoneText = new Text("Телефон:");
@@ -491,28 +516,28 @@ add.setOnAction((e)  -> {
             }
         });
 
-        textBoxDoc.getChildren().addAll(docNameText, departmentText, phoneText, addDocButton);
+        textBoxDoc.getChildren().addAll(idText, docNameText, departmentText, phoneText, addDocButton);
         doctorPane.add(textBoxDoc, 1, 0);
 
         VBox docLabelBox = new VBox();
+        Label idLabel = new Label();
         Label docNameLabel = new Label();
         Label docDepartmentLabel = new Label();
         Label docPhoneLabel = new Label();
 
-        docLabelBox.getChildren().addAll(docNameLabel, docDepartmentLabel, docPhoneLabel);
+        docLabelBox.getChildren().addAll(idLabel, docNameLabel, docDepartmentLabel, docPhoneLabel);
         doctorPane.add(docLabelBox, 2, 0);
         doctorStage.setAlwaysOnTop(true);
         docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) ->{
                     if(o != null && o.getValue()!= null) {
                         Doctor selected = (Doctor) docTableView.getSelectionModel().getSelectedItem();
+                        idLabel.textProperty().bind(selected.idProperty());
                         docNameLabel.textProperty().bind(selected.NameSurnameProperty());
                         docDepartmentLabel.textProperty().bind(selected.departmentProperty());
                         if(selected.phoneNumberProperty().get() != null){
                             docPhoneLabel.textProperty().bind(selected.phoneNumberProperty());
                         }
-
                     }
-
                 }
         );
         docTableView.setOnMouseClicked((e) -> {
@@ -522,12 +547,9 @@ add.setOnAction((e)  -> {
                     Stage st = StagesFactory.editDocStage(selected);
                     editDoctorStageOpened = true;
                     st.show();
-
                 }
                 docTableView.getSelectionModel().clearSelection();
             }
-
-
         });
 
         Scene doctorScene = new Scene(doctorPane);

@@ -211,7 +211,7 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         });
 
         //Creating doctor scene
-        Stage doctorStage = new Stage();
+        /*Stage doctorStage = new Stage();
         stages.add(doctorStage);
         doctorStage.setTitle("Doctor list");
         doctorStage.initStyle(StageStyle.UTILITY);
@@ -358,7 +358,7 @@ docTableView.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) 
             catch (IOException exc){}
         });
         //Check box in menu action
-
+*/
         docMenuItem.setOnAction((e)->{
 
             if(docMenuItem.isSelected()) {
