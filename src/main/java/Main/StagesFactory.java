@@ -7,6 +7,7 @@ import Main.Lab;
 import Utils.Corrections;
 import Utils.DBUtil;
 import Utils.Validations;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -27,7 +28,7 @@ import java.util.Properties;
 public class StagesFactory {
     private static boolean addDoctorStageOpened = false;
     private static boolean editDoctorStageOpened = false;
-
+    private static TableView<Doctor> docTableView = new TableView<Doctor>();
 
 
     public static Stage addNewAnalysisStage(){
@@ -446,50 +447,60 @@ if(!doc.getDepartment().equals(docDept)){
         TextField docSearchField = new TextField();
         hbox1.getChildren().addAll(new Text("Search:"), docSearchField);
         Button refreshTable = new Button();
+
+        ObservableList<Doctor> docList = FXCollections.observableArrayList();
         try {
-            populateDoctorList();
+            //populateDoctorList();
+            docList = DoctorDAO.searchDoctors();
+             //docList = DoctorDAO.getDoctorList();
         }
-        catch (Exception e){}
+        catch (Exception e){
+            System.out.println(e);
+        }
 
-        //TableView docTableView = new TableView();
-        TableView docTableView = new TableView();
+                //TableView docTableView = new TableView();
+        //TableView docTableView = new TableView<Doctor>();
         docTableView.setPrefWidth(650);
-
+        FilteredList<Doctor> doctorFilteredList = new FilteredList<>(docList, p->true);
         docSearchField.textProperty().addListener((ov, o, nv) -> {
-            getDoctorFilteredList().setPredicate(doctor -> {
+
+            doctorFilteredList.setPredicate(doctor -> {
                 if (nv == null || nv.equals("")) {
                     return true;
                 }
                 String filter = nv.toLowerCase();
                 if (doctor.getNameSurname().toLowerCase().contains(filter)) {
                     return true;
-                } else if (doctor.getDepartment().toLowerCase().contains(filter)) {
+                } else if (doctor.getDepartment().toLowerCase().contains(filter)&&doctor.getDepartment()!=null) {
                     return true;
                 } else return false;
 
 
             });
 
+
+
         });
 
-        docTableView.setItems(getDoctorSortedList());
-        TableColumn<Doctor, String> NameCol = new TableColumn<>("Classes.Doctor");
-        NameCol.setCellValueFactory(new PropertyValueFactory("NameSurname"));
-        NameCol.setPrefWidth(docTableView.getPrefWidth() * 0.8);
-        TableColumn<Doctor, String> depCol = new TableColumn<>("Department");
+        SortedList<Doctor> sort = new SortedList<>(doctorFilteredList);
+
+
+        TableColumn<Doctor, String> nameCol = new TableColumn<>("Classes.Doctor");
+        nameCol.setCellValueFactory(new PropertyValueFactory<Doctor, String>("NameSurname"));
+        nameCol.setPrefWidth(docTableView.getPrefWidth() * 0.8);
+        TableColumn<Doctor, String> depCol = new TableColumn<Doctor, String>("Department");
         depCol.setCellValueFactory(new PropertyValueFactory("department"));
         depCol.setPrefWidth(docTableView.getPrefWidth() *0.2);
 
 
-
-        docTableView.getColumns().setAll(NameCol, depCol);
+        docTableView.setItems(sort);
+        docTableView.getColumns().setAll(nameCol, depCol);
         docTableView.prefHeightProperty().bind(doctorStage.heightProperty());
 
         refreshTable.setOnAction((e) -> {
             try {
-                populateDoctorList();
-                docTableView.setItems(getDoctorSortedList());
 
+                DoctorDAO.reloadList();
 
                 System.gc();
             }

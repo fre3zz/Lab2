@@ -10,6 +10,9 @@ import java.sql.SQLException;
 
 public class DoctorDAO {
     private static ObservableList<Doctor> docList;
+    static{
+        docList = FXCollections.observableArrayList();
+    }
     public static Doctor searchDoctor (String docId) throws SQLException, ClassNotFoundException {
         //Declare a SELECT statement
         String selectStmt = "SELECT * FROM doctors WHERE doc_id="+docId;
@@ -43,6 +46,15 @@ public class DoctorDAO {
         }
         return doctor;
     }
+    public static void reloadList(){
+        docList.clear();
+        try {
+            searchDoctors();
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+    }
 
     public static ObservableList<Doctor> searchDoctors() throws SQLException, ClassNotFoundException {
         //Declare a SELECT statement
@@ -55,9 +67,9 @@ public class DoctorDAO {
 
             //Send ResultSet to the getEmployeeList method and get employee object
             if(docList!=null)docList.clear();
-            docList = getDoctorList(rsEmps);
+            //docList = getDoctorList(rsEmps);
+            loadDoctorList(rsEmps);
 
-            //Return employee object
             return docList;
         } catch (SQLException e) {
             System.out.println("SQL select operation has been failed: " + e);
@@ -66,10 +78,7 @@ public class DoctorDAO {
         }
         return null;
     }
-    public static ObservableList<Doctor> getDoctorList(ResultSet rs) throws SQLException, ClassNotFoundException {
-        //Declare a observable List which comprises of Employee objects
-        ObservableList<Doctor> docList = FXCollections.observableArrayList();
-
+    public static void loadDoctorList(ResultSet rs) throws SQLException{
         while (rs.next()) {
             Doctor doctor = new Doctor();
             doctor.setId(Integer.toString(rs.getInt("DOC_ID")));
@@ -78,13 +87,20 @@ public class DoctorDAO {
             doctor.setPhoneNumber(rs.getString("PHONE"));
             //Add employee to the ObservableList
             docList.add(doctor);
+            System.out.println("doc added");
         }
+    }
+    public static ObservableList<Doctor> getDoctorList() {
+        //Declare a observable List which comprises of Employee objects
+        //ObservableList<Doctor> docList = FXCollections.observableArrayList();
+
+
         //return empList (ObservableList of Employees)
         return docList;
     }
     public static void insertDoc (String name, String department, String phoneNumber) throws SQLException, ClassNotFoundException {
 
-        String updateStmt= null;
+        String updateStmt = null;
         if(phoneNumber == null) {
            updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT) values ('" + name + "', '" + department + "')";
         }

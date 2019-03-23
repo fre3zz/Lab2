@@ -89,14 +89,15 @@ public class Doctor {
         //return doctor.getNameSurname().equals(this.getNameSurname());
     }
 
+
     @Override
     public int hashCode() {
 
         return Objects.hash(NameSurname);
     }
     public static boolean checkPresence(Doctor doctor){
-        for(int i = 0; i < DataOperations.getDoctorList().size(); i++){
-            if(doctor.equals(DataOperations.getDoctorList().get(i)))return true;
+        for(int i = 0; i < DoctorDAO.getDoctorList().size(); i++){
+            if(doctor.equals(DoctorDAO.getDoctorList().get(i)))return true;
 
         }
         return false;
