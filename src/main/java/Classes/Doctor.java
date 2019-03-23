@@ -1,5 +1,6 @@
 package Classes;
 
+import Utils.DataOperations;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -85,6 +86,7 @@ public class Doctor {
         if (o == null || getClass() != o.getClass()) return false;
         Doctor doctor = (Doctor) o;
         return doctor.getDepartment().equals(this.getDepartment()) && doctor.getNameSurname().equals(this.getNameSurname());
+        //return doctor.getNameSurname().equals(this.getNameSurname());
     }
 
     @Override
@@ -92,9 +94,9 @@ public class Doctor {
 
         return Objects.hash(NameSurname);
     }
-    public static boolean checkPresence(ObservableList<Doctor> doctorList, Doctor doctor){
-        for(int i = 0; i < doctorList.size(); i++){
-            if(doctor.equals(doctorList.get(i)))return true;
+    public static boolean checkPresence(Doctor doctor){
+        for(int i = 0; i < DataOperations.getDoctorList().size(); i++){
+            if(doctor.equals(DataOperations.getDoctorList().get(i)))return true;
 
         }
         return false;

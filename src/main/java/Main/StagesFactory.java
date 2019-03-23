@@ -27,7 +27,7 @@ import java.util.Properties;
 public class StagesFactory {
     private static boolean addDoctorStageOpened = false;
     private static boolean editDoctorStageOpened = false;
-    static TableView docTableView;
+
 
 
     public static Stage addNewAnalysisStage(){
@@ -72,7 +72,7 @@ public class StagesFactory {
         });
         return newAnStage;
     }
-     public static Stage addNewDocStage(){
+     public static Stage addNewDocStage(TableView docTableView){
         Stage newStage = new Stage();
         newStage.setResizable(false);
         newStage.setTitle("Add new doc");
@@ -163,26 +163,15 @@ phoneTextField.textProperty().addListener((ov, o, nv) -> {
 
 add.setOnAction((e)  -> {
     Doctor doc = new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
-    if(!Doctor.checkPresence(getDoctorList(), doc)){
-        //getDoctorList().add(new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText()));
+    if(!Doctor.checkPresence(doc)){
+
         try {
             DoctorDAO.insertDoc(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
-            try {
-                populateDoctorList();
-                docTableView.setItems(getDoctorSortedList());
-
-
-
-            }
-            catch (Exception exc){}
-
+            populateDoctorList();
+            docTableView.setItems(getDoctorSortedList());
         }
         catch (Exception exc){}
-
-
-
         newStage.close();
-
         addDoctorStageOpened = false;
         Lab.stages.remove(newStage);
     }
@@ -208,6 +197,7 @@ addDoctorStageOpened = false;
 
 
     public static Stage editDocStage(Doctor doctor){
+        String docId = doctor.getId();
         String docName = doctor.getNameSurname();
         String docDept = doctor.getDepartment();
         String docPhone = doctor.getPhoneNumber();
@@ -241,77 +231,94 @@ addDoctorStageOpened = false;
             doctor.setDepartment(docDept);
             doctor.setNameSurname(docName);
             newStage.close();
-            Lab.setEditDoctorStageOpened(false);
+            editDoctorStageOpened = false;
             Lab.stages.remove(newStage);
         });
 
-        Button add = new Button("edit doc");
-        gp.add(add, 1, 3);
-        add.setPrefHeight(40);
-        add.setPrefWidth(80);
+        Button edit = new Button("edit doc");
+        gp.add(edit, 1, 3);
+        edit.setPrefHeight(40);
+        edit.setPrefWidth(80);
         TextField nameTextField = new TextField();
         gp.add(nameTextField, 1, 0);
         nameTextField.setTooltip(new Tooltip("ФИО врача: Фамилия Имя Отчество или Фамилия И.О."));
-        nameTextField.textProperty().bindBidirectional(doctor.NameSurnameProperty());
+        nameTextField.setText(docName);
         TextField departmentTextField = new TextField();
         departmentTextField.setTooltip(new Tooltip("Отделение"));
         gp.add(departmentTextField, 1, 1);
-        departmentTextField.textProperty().bindBidirectional(doctor.departmentProperty());
+        departmentTextField.setText(docDept);
         TextField phoneTextField = new TextField();
         phoneTextField.setTooltip(new Tooltip("Телефон: +71234567890 или 12-34"));
         gp.add(phoneTextField, 1, 2);
-        phoneTextField.textProperty().bindBidirectional(doctor.phoneNumberProperty());
-        add.setDisable(true);
+        phoneTextField.setText(docPhone);
+        edit.setDisable(true);
         nameTextField.textProperty().addListener((ov, o, nv) -> {
-            nameTextField.setText(Corrections.nameCorrection(nv));
-
-
+            //nameTextField.setText(Corrections.nameCorrection(nv));
             if(Validations.isNameValid(nameTextField.textProperty().get())
                     && Validations.isDepartmentValid(departmentTextField.textProperty().get())
                     && Validations.isPhoneValid(phoneTextField.textProperty().get()))
             {
 
-                add.setDisable(false);
+                edit.setDisable(false);
             }
-            else add.setDisable(true);
+            else edit.setDisable(true);
         });
 
         departmentTextField.textProperty().addListener((ov, o, nv) -> {
-            departmentTextField.setText(Corrections.departmentCorrection(nv));
+            //departmentTextField.setText(Corrections.departmentCorrection(nv));
             if(Validations.isNameValid(nameTextField.textProperty().get())
                     && Validations.isDepartmentValid(departmentTextField.textProperty().get())
                     && Validations.isPhoneValid(phoneTextField.textProperty().get()))
             {
-                add.setDisable(false);
+                edit.setDisable(false);
             }
-            else add.setDisable(true);
+            else edit.setDisable(true);
         });
 
         phoneTextField.textProperty().addListener((ov, o, nv) -> {
-            phoneTextField.setText(Corrections.phoneCorrection(nv));
-
+            //phoneTextField.setText(Corrections.phoneCorrection(nv));
             if(Validations.isNameValid(nameTextField.textProperty().get())
                     && Validations.isDepartmentValid(departmentTextField.textProperty().get())
                     && Validations.isPhoneValid(phoneTextField.textProperty().get()))
             {
-                add.setDisable(false);
+                edit.setDisable(false);
             }
-            else add.setDisable(true);
+            else edit.setDisable(true);
         });
-        add.setOnAction((e) -> {
+        edit.setOnAction((e) -> {
 
             Doctor doc = new Doctor(nameTextField.getText(), departmentTextField.getText(), phoneTextField.getText());
-            if(!Doctor.checkPresence(getDoctorList(), doc)){
-
+            if(!Doctor.checkPresence(doc)|| !doc.getPhoneNumber().equals(docPhone)){
+if(!doc.getNameSurname().equals(docName) ){
+    try {
+        DoctorDAO.updateDocName(doc.getNameSurname(), docId);
+    }
+    catch(Exception exc){}
+    doctor.setNameSurname(nameTextField.getText());
+}
+if(!doc.getDepartment().equals(docDept)){
+    try {
+        DoctorDAO.updateDocDepartment(doc.getDepartment(), docId);
+        }
+        catch(Exception exc){}
+        doctor.setDepartment(departmentTextField.getText());
+    }
+    if(!doc.getPhoneNumber().equals(docPhone)){
+    try {
+        DoctorDAO.updateDocPhoneN(doc.getPhoneNumber(), docId);
+        }
+        catch(Exception exc){}
+        doctor.setPhoneNumber(phoneTextField.getText());
+    }
                 editDoctorStageOpened = false;
-
                 newStage.close();
 
                 Lab.stages.remove(newStage);
             }
             else{
                 Tooltip tp = new Tooltip("Невозможно добавить, так как такой врач уже есть");
-                add.setTooltip(tp);
+
+                edit.setTooltip(tp);
                 tp.show(newStage);
             }
         });
@@ -321,7 +328,7 @@ addDoctorStageOpened = false;
         newStage.setScene(sc);
         newStage.setAlwaysOnTop(true);
         newStage.setOnCloseRequest((e) -> {
-            Lab.setEditDoctorStageOpened(false);
+            editDoctorStageOpened = false;
             newStage.close();
             Lab.stages.remove(newStage);
         });
@@ -445,7 +452,7 @@ addDoctorStageOpened = false;
         catch (Exception e){}
 
         //TableView docTableView = new TableView();
-        docTableView = new TableView();
+        TableView docTableView = new TableView();
         docTableView.setPrefWidth(650);
 
         docSearchField.textProperty().addListener((ov, o, nv) -> {
@@ -508,11 +515,10 @@ addDoctorStageOpened = false;
             if(!addDoctorStageOpened) {
                 System.out.println("add button clicked");
                 addDoctorStageOpened = true;
-                Stage newStage = StagesFactory.addNewDocStage();
+                Stage newStage = StagesFactory.addNewDocStage(docTableView);
                 newStage.setAlwaysOnTop(true);
                 Lab.stages.add(newStage);
                 newStage.show();
-
             }
         });
 

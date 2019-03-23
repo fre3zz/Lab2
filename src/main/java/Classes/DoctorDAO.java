@@ -1,6 +1,7 @@
 package Classes;
 
 import Utils.DBUtil;
+import javafx.beans.property.IntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -82,7 +83,7 @@ public class DoctorDAO {
         return docList;
     }
     public static void insertDoc (String name, String department, String phoneNumber) throws SQLException, ClassNotFoundException {
-        //Declare a DELETE statement
+
         String updateStmt= null;
         if(phoneNumber == null) {
            updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT) values ('" + name + "', '" + department + "')";
@@ -90,12 +91,39 @@ public class DoctorDAO {
         else{
             updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT, PHONE) values ('" + name + "', '" + department + "', '" + phoneNumber + "')" ;
         }
-        //Execute DELETE operation
+
         try {
             DBUtil.dbExecuteUpdate(updateStmt);
         } catch (SQLException e) {
             System.out.print("Error occurred while INSERT Operation: " + e);
-            //throw e;
+
+        }
+    }
+    public static void updateDocName(String newName, String id) throws SQLException, ClassNotFoundException{
+        String updateStmt = "Update doctors set NAME = '" + newName +"'where DOC_ID = " + Integer.parseInt(id);
+        try {
+            DBUtil.dbExecuteUpdate(updateStmt);
+        } catch (SQLException e) {
+            System.out.print("Error occurred while UPDATE Operation: " + e);
+
+        }
+    }
+    public static void updateDocDepartment(String newDept, String id) throws SQLException, ClassNotFoundException{
+        String updateStmt = "Update doctors set DEPARTMENT = '" + newDept +"'where DOC_ID = " + Integer.parseInt(id);
+        try {
+            DBUtil.dbExecuteUpdate(updateStmt);
+        } catch (SQLException e) {
+            System.out.print("Error occurred while UPDATE Operation: " + e);
+
+        }
+    }
+    public static void updateDocPhoneN(String newPhoneN, String id) throws SQLException, ClassNotFoundException{
+        String updateStmt = "Update doctors set PHONE = '" + newPhoneN +"'where DOC_ID = " + Integer.parseInt(id);
+        try {
+            DBUtil.dbExecuteUpdate(updateStmt);
+        } catch (SQLException e) {
+            System.out.print("Error occurred while UPDATE Operation: " + e);
+
         }
     }
 }
