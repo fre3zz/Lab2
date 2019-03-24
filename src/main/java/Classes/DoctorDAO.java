@@ -86,6 +86,7 @@ public class DoctorDAO {
             doctor.setDepartment(rs.getString("DEPARTMENT"));
             doctor.setPhoneNumber(rs.getString("PHONE"));
             //Add employee to the ObservableList
+
             docList.add(doctor);
             System.out.println("doc added");
         }

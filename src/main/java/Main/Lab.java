@@ -1,5 +1,7 @@
 package Main;
 
+import Classes.Department;
+import Classes.DepartmentDAO;
 import Classes.Doctor;
 import Classes.DoctorDAO;
 import Utils.DBUtil;
@@ -84,6 +86,14 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
             dbName = properties.getProperty("DBname");
         }
         catch (IOException e){}
+
+
+
+        ObservableList<Department> depl = DepartmentDAO.getDepartmentList();
+        Department department = new Department("ggg");
+        int i = DepartmentDAO.addDepartment(department);
+        System.out.println(i);
+
     }
 
     @Override
