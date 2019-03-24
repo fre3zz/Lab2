@@ -2,6 +2,8 @@ package Utils;
 
 public class Validations {
     public static final String VALID_DEPARTMENT = "[a-яА-Я\\s\\.\\-]{1,40}";
+    public static final String VALID_NAME_SHORT = "[А-Я][а-я\\-]{1,20}\\s[а-яА-Я]{1,2}[.][а-яА-Я]{1,2}[.]";
+    public static final String VALID_NAME_LONG = "[А-Я][а-я]{1,20}\\s[А-Я][а-я]{1,20}\\s[А-Я][а-я]{1,20}";
     public static boolean isNameValid(String s){
         return s.matches("[А-Я][а-я\\-]{1,20}\\s[а-яА-Я]{1,2}[.][а-яА-Я]{1,2}[.]")||s.matches("[А-Я][а-я]{1,20}\\s[А-Я][а-я]{1,20}\\s[А-Я][а-я]{1,20}");
     }

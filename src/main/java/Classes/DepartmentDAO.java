@@ -11,7 +11,7 @@ import java.sql.SQLException;
 Класс для заполнения и управления массивом объектов @Department данными из базы данных
 В базе данных таблица - department, поля - 'department_id' - int, 'department_name' - varchar.
 Массив типа ObservableList, так как будет использован для создания выпадющих списков.
-Необходимости в получении отделного отделения нет, как и в удалении записей из таблицы.
+Необходимости в удалении записей из таблицы нет.
  */
 
 public class DepartmentDAO {
@@ -61,9 +61,10 @@ public class DepartmentDAO {
     }
 
     //метод, добавляющий новую запись в список
-    //возвращает id новой записи, если она была добавлена и -1,
-    //если отделение с таким названием, независимо от регистра в поле departmentName
+    //возвращает id новой записи, если она была добавлена или
+    //если id отделения с таким названием, независимо от регистра в поле departmentName
     //Если в списке нет такой записи, то id выставляется на 1 больше, количества записей
+    //Возвращает -1, если что-то пошло не так
 
     public static int addDepartment(Department dept){
         try{
@@ -74,7 +75,7 @@ public class DepartmentDAO {
             return -1;
         }
         for(Department d : departmentList){
-            if(d.equals(dept))return -1;
+            if(d.equals(dept))return d.getDepartmentId();
         }
 
         dept.setDepartmentId(departmentList.size()+1);
@@ -90,6 +91,24 @@ public class DepartmentDAO {
         }
         return departmentList.size();
 
+    }
+
+    //Метод для формирования объекта Department по номеру id
+
+    public static Department getDepartmentById(int id){
+        String selectStatement = "SELECT * FROM department WHERE " + DEPARTMENT_ID + "=" + id;
+        ResultSet rs = null;
+        Department department = new Department();
+        try{
+            rs = DBUtil.dbExecuteQuery(selectStatement);
+            rs.next();
+            department.setDepartmentId(id);
+            department.setDepartmantName(rs.getString(DEPARTMENT_NAME));
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+        return department;
     }
 
 }

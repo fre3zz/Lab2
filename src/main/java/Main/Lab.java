@@ -28,55 +28,73 @@ import java.util.Properties;
 
 public class Lab extends Application {
     //list of all stages
-public static ArrayList<Stage> stages = new ArrayList<>();
-private static boolean addAnStOpened = false;
-private static boolean addDoctorStageOpened = false;
-private static boolean editDoctorStageOpened = false;
-private static boolean dbSettingsStageOpened = false;
-private static String dbName = "";
-private static String dbPort = "";
-private static boolean connectedToDB = false;
-private static ObservableList<Doctor> doctorList = null;
-public static void populateDoctorList() throws SQLException, ClassNotFoundException {
-    doctorList = DoctorDAO.searchDoctors();
-}
-private static FilteredList<Doctor> doctorFilteredList;
-private static SortedList<Doctor> doctorSortedList;
-public static ObservableList<Doctor> getDoctorList(){
-    return doctorList;
-}
-public static void setAddAnStOpened(boolean x){
-    addAnStOpened = x;
-}
-public static void setAddDoctorStageOpened(boolean x){
-    addDoctorStageOpened = x;
-}
-public static void setEditDoctorStageOpened(boolean x) { editDoctorStageOpened = x;}
-public static void setDbSettingsStageOpened(boolean x) { dbSettingsStageOpened = x;}
-public static void setdbName(String name){
-    dbName = name;
-}
-public static String getDbName(){
-    return dbName;
-}
-public static void setDbPort(String port){
-    dbPort = port;
-}
-public static String getDbPort() {
-    return dbPort;
-}
-private static Properties properties;
-public static Properties getProperties(){
-    return properties;
-}
-private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
+    public static ArrayList<Stage> stages = new ArrayList<>();
+    private static boolean addAnStOpened = false;
+    private static boolean addDoctorStageOpened = false;
+    private static boolean editDoctorStageOpened = false;
+    private static boolean dbSettingsStageOpened = false;
+    private static String dbName = "";
+    private static String dbPort = "";
+    private static boolean connectedToDB = false;
+    private static ObservableList<Doctor> doctorList = null;
+
+    public static void populateDoctorList() throws SQLException, ClassNotFoundException {
+        //doctorList = DoctorDAO.searchDoctors();
+    }
+
+    private static FilteredList<Doctor> doctorFilteredList;
+    private static SortedList<Doctor> doctorSortedList;
+
+    public static ObservableList<Doctor> getDoctorList() {
+        return doctorList;
+    }
+
+    public static void setAddAnStOpened(boolean x) {
+        addAnStOpened = x;
+    }
+
+    public static void setAddDoctorStageOpened(boolean x) {
+        addDoctorStageOpened = x;
+    }
+
+    public static void setEditDoctorStageOpened(boolean x) {
+        editDoctorStageOpened = x;
+    }
+
+    public static void setDbSettingsStageOpened(boolean x) {
+        dbSettingsStageOpened = x;
+    }
+
+    public static void setdbName(String name) {
+        dbName = name;
+    }
+
+    public static String getDbName() {
+        return dbName;
+    }
+
+    public static void setDbPort(String port) {
+        dbPort = port;
+    }
+
+    public static String getDbPort() {
+        return dbPort;
+    }
+
+    private static Properties properties;
+
+    public static Properties getProperties() {
+        return properties;
+    }
+
+    private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
 
     @Override
-    public void init(){
-    System.out.println("init");
-    properties = new Properties();
-    //initProperties(properties);
-        try(InputStream is = new FileInputStream("config.properties")){
+    public void init() {
+        System.out.println("init");
+        properties = new Properties();
+        //initProperties(properties);
+        try (InputStream is = new FileInputStream("config.properties")) {
             properties.load(is);
             DocWindowX = Double.parseDouble(properties.getProperty("DocWindowX"));
             DocWindowY = Double.parseDouble(properties.getProperty("DocWindowY"));
@@ -84,24 +102,18 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
             DocWindowHeight = Double.parseDouble(properties.getProperty("DocWindowHeight"));
             dbPort = properties.getProperty("DBport");
             dbName = properties.getProperty("DBname");
+        } catch (IOException e) {
         }
-        catch (IOException e){}
 
-
-
-        ObservableList<Department> depl = DepartmentDAO.getDepartmentList();
-        Department department = new Department("ggg");
-        int i = DepartmentDAO.addDepartment(department);
-        System.out.println(i);
 
     }
 
     @Override
-    public void stop(){
-    System.out.println("stop");
+    public void stop() {
+        System.out.println("stop");
     }
 
-    public void start(Stage primaryStage) throws SQLException, ClassNotFoundException{
+    public void start(Stage primaryStage) throws SQLException, ClassNotFoundException {
         //showPatientsWindow.set(true);
 
         //Main Stage
@@ -126,7 +138,7 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         MenuItem dbSettings = new MenuItem("DB settings");
         settingsMenu.getItems().add(dbSettings);
         dbSettings.setOnAction((e) -> {
-            if(!dbSettingsStageOpened) {
+            if (!dbSettingsStageOpened) {
                 Stage settings = StagesFactory.dbSettingsStage();
                 settings.show();
 
@@ -140,7 +152,7 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         patientsWindow.maxHeightProperty().bind(primaryStage.heightProperty().subtract(60));
         //Not allowing moving Scene to high
         patientsWindow.yProperty().addListener((ov, nv, olv) -> {
-            if(patientsWindow.getY() <= 60) patientsWindow.setY(60);
+            if (patientsWindow.getY() <= 60) patientsWindow.setY(60);
         });
         patientsWindow.setMinHeight(300);
         patientsWindow.setMinWidth(300);
@@ -154,8 +166,8 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         patientsGridPane.setPadding(new Insets(5));
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setHgrow(Priority.ALWAYS);
-        ColumnConstraints col2 = new ColumnConstraints(150,150,200);
-        ColumnConstraints col3 = new ColumnConstraints(200,200, Double.MAX_VALUE);
+        ColumnConstraints col2 = new ColumnConstraints(150, 150, 200);
+        ColumnConstraints col3 = new ColumnConstraints(200, 200, Double.MAX_VALUE);
         patientsGridPane.getColumnConstraints().addAll(col1, col2, col3);
         Scene patientsScene = new Scene(patientsGridPane);
         patientsWindow.setScene(patientsScene);
@@ -164,7 +176,7 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         //Table view for analysis list Col#1
         TableView analysisTableView = new TableView();
         analysisTableView.prefHeightProperty().bind(patientsWindow.heightProperty());
-        patientsGridPane.add(analysisTableView, 0,0);
+        patientsGridPane.add(analysisTableView, 0, 0);
 
         //VBOX with labels Col#2
         VBox textBoxPatients = new VBox();
@@ -180,8 +192,8 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
         Button addAnalysisButton = new Button("ADD Analysis");
         addAnalysisButton.prefWidthProperty().bind(col2.prefWidthProperty());
         addAnalysisButton.prefHeightProperty().bind(addAnalysisButton.prefWidthProperty());
-        addAnalysisButton.setOnAction((e) ->{
-            if(!addAnStOpened) {
+        addAnalysisButton.setOnAction((e) -> {
+            if (!addAnStOpened) {
                 setAddAnStOpened(true);
                 Stage newAnStage = StagesFactory.addNewAnalysisStage();
                 newAnStage.setAlwaysOnTop(true);
@@ -215,21 +227,20 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
             patientsMenuItem.setSelected(false);
         });
         //Check box in menu action
-        patientsMenuItem.setOnAction((e)->{
-            if(patientsMenuItem.isSelected())patientsWindow.show();
+        patientsMenuItem.setOnAction((e) -> {
+            if (patientsMenuItem.isSelected()) patientsWindow.show();
             else patientsWindow.hide();
         });
 
 
-        docMenuItem.setOnAction((e)->{
+        docMenuItem.setOnAction((e) -> {
 
-            if(docMenuItem.isSelected()) {
+            if (docMenuItem.isSelected()) {
                 Stage docSt = StagesFactory.doctorStage();
                 docSt.show();
-            }
-            else {
-                for(Stage st: stages){
-                    if(st.getTitle().equals("Doctor list")) st.close();
+            } else {
+                for (Stage st : stages) {
+                    if (st.getTitle().equals("Doctor list")) st.close();
                 }
             }
         });
@@ -260,26 +271,29 @@ private double DocWindowX, DocWindowY, DocWindowWidth, DocWindowHeight;
             }
             catch (IOException exc){}
             */
-            for(Stage x : stages){
+            for (Stage x : stages) {
                 System.out.println(x);
-            x.close();
-        }
+                x.close();
+            }
 
-});
+        });
 
     }
-    public static void main(String[] args){
+
+    public static void main(String[] args) {
         launch(args);
     }
-    public void initProperties(Properties props){
-        try(OutputStream os = new FileOutputStream("config.properties")){
-props.setProperty("DocWindowX", "500");
-props.setProperty("DocWindowY", "100");
-props.store(os, null);
+
+    public void initProperties(Properties props) {
+        try (OutputStream os = new FileOutputStream("config.properties")) {
+            props.setProperty("DocWindowX", "500");
+            props.setProperty("DocWindowY", "100");
+            props.store(os, null);
+        } catch (IOException e) {
         }
-        catch (IOException e){}
     }
-    public SortedList<Doctor> getSortedList(ObservableList<Doctor> doclist, TextField searchField){
+}
+    /*public SortedList<Doctor> getSortedList(ObservableList<Doctor> doclist, TextField searchField){
         doctorFilteredList = new FilteredList<>(doclist, p->true);
         searchField.textProperty().addListener((ov, o, nv) -> {
             doctorFilteredList.setPredicate(doctor -> {
@@ -299,5 +313,6 @@ props.store(os, null);
         });
         doctorSortedList = new SortedList<>(doctorFilteredList);
         return doctorSortedList;
+
     }
-}
+    */

@@ -16,7 +16,7 @@ public class DataOperations {
 
     public static void populateDoctorList() throws SQLException, ClassNotFoundException {
         if(doctorList != null) doctorList.clear();
-        doctorList = DoctorDAO.searchDoctors();
+        //doctorList = DoctorDAO.searchDoctors();
     }
     public static SortedList<Doctor> getDoctorSortedList(){
         if(doctorFilteredList != null) doctorFilteredList.clear();

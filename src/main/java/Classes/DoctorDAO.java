@@ -8,139 +8,136 @@ import javafx.collections.ObservableList;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+
+/*
+Структура базы данных:
+doctor_id - int
+doctor_name - varchar
+doctor_phone - varchar
+department_id - int
+
+Класс содержит список всех объектов типа Doctor, загруженных из таблицы.
+Необходимые операции - SELECT, UPDATE, INSERT
+ */
 public class DoctorDAO {
-    private static ObservableList<Doctor> docList;
-    static{
-        docList = FXCollections.observableArrayList();
-    }
-    public static Doctor searchDoctor (String docId) throws SQLException, ClassNotFoundException {
-        //Declare a SELECT statement
-        String selectStmt = "SELECT * FROM doctors WHERE doc_id="+docId;
 
-        //Execute SELECT statement
+    private static final String DOCTOR_ID = "doctor_id";
+    private static final String DOCTOR_NAME = "doctor_name";
+    private static final String DOCTOR_PHONE = "doctor_phone";
+    private static final String DEPARTMENT_ID = "department_id";
+    private static final String TABLE_NAME = "doctor";
+
+    private static ObservableList<Doctor> doctorList = FXCollections.observableArrayList();
+
+    public static ObservableList<Doctor> getDoctorListWithLoad() {
         try {
-            //Get ResultSet from dbExecuteQuery method
-            ResultSet rsDoc = DBUtil.dbExecuteQuery(selectStmt);
-
-            //Send ResultSet to the getEmployeeFromResultSet method and get employee object
-            Doctor doctor = getDoctorFromResultSet(rsDoc);
-
-            //Return employee object
-            return doctor;
-        } catch (SQLException e) {
-            System.out.println("While searching an employee with " + docId + " id, an error occurred: " + e);
-            //Return exception
-            throw e;
-        }
-    }
-    private static Doctor getDoctorFromResultSet(ResultSet rs) throws SQLException
-    {
-        Doctor doctor = null;
-        if (rs.next()) {
-            doctor = new Doctor();
-            doctor.setId(Integer.toString(rs.getInt("DOC_ID")));
-            doctor.setNameSurname(rs.getString("NAME"));
-            doctor.setDepartment(rs.getString("DEPARTMENT"));
-            doctor.setPhoneNumber(rs.getString("PHONE"));
-
-        }
-        return doctor;
-    }
-    public static void reloadList(){
-        docList.clear();
-        try {
-            searchDoctors();
+            loadList();
         }
         catch (Exception e){
             System.out.println(e);
         }
+        return doctorList;
     }
 
-    public static ObservableList<Doctor> searchDoctors() throws SQLException, ClassNotFoundException {
-        //Declare a SELECT statement
-        String selectStmt = "SELECT * FROM doctors";
-
-        //Execute SELECT statement
-        try {
-            //Get ResultSet from dbExecuteQuery method
-            ResultSet rsEmps = DBUtil.dbExecuteQuery(selectStmt);
-
-            //Send ResultSet to the getEmployeeList method and get employee object
-            if(docList!=null)docList.clear();
-            //docList = getDoctorList(rsEmps);
-            loadDoctorList(rsEmps);
-
-            return docList;
-        } catch (SQLException e) {
-            System.out.println("SQL select operation has been failed: " + e);
-            //Return exception
-            //throw e;
-        }
-        return null;
+    public static ObservableList<Doctor> getDoctorList(){
+        return doctorList;
     }
-    public static void loadDoctorList(ResultSet rs) throws SQLException{
-        while (rs.next()) {
-            Doctor doctor = new Doctor();
-            doctor.setId(Integer.toString(rs.getInt("DOC_ID")));
-            doctor.setNameSurname(rs.getString("NAME"));
-            doctor.setDepartment(rs.getString("DEPARTMENT"));
-            doctor.setPhoneNumber(rs.getString("PHONE"));
-            //Add employee to the ObservableList
 
-            docList.add(doctor);
-            System.out.println("doc added");
+    //Метод для заполнения doctorList всеми записями из таблицы
+    //Отделение заполняется на основании присоединенной с помощью INNER JOIN таблицы отделений
+    //Возвращает true, если список заполнился
+    //Возвращает false, если что-то пошло не так
+
+    public static boolean loadList() throws SQLException, ClassNotFoundException {
+        String selectStatement = "SELECT * FROM " + TABLE_NAME + " INNER JOIN department ON doctor.department_id = department.department_id";
+        ResultSet rs = null;
+        try{
+            rs = DBUtil.dbExecuteQuery(selectStatement);
         }
+        catch(Exception e){
+            System.out.println(e);
+            return false;
+        }
+        if(doctorList!=null){
+            doctorList.removeAll();
+            doctorList.clear();
+        }
+        if(rs == null) return false;
+        while(rs.next()){
+            Doctor doctor = new Doctor(rs.getString(DOCTOR_NAME));
+            doctor.setPhoneNumber(rs.getString(DOCTOR_PHONE));
+            doctor.setDoctorId(rs.getInt(DOCTOR_ID));
+            Department dept = new Department();
+            dept.setDepartmentId(rs.getInt(DEPARTMENT_ID));
+            dept.setDepartmantName(rs.getString("department_name"));
+            doctor.setDepartment(dept);
+            doctorList.add(doctor);
+        }
+        return true;
     }
-    public static ObservableList<Doctor> getDoctorList() {
-        //Declare a observable List which comprises of Employee objects
-        //ObservableList<Doctor> docList = FXCollections.observableArrayList();
 
+    /*
+    Метод для добавления нового доктора в список.
+    Возвращает doctor_id добавленного доктора, или id доктора с таким же именем в списке.
+    Если что-то пошло не так, то возвращается -1.
+    department_id получается, выполнив метод @DepartmentDAO.addDepartment(department.name) с указанным именем отделения
+    таким образом для добавления нужно doctor_name, и department.name, также опционально номер телефона.
+     */
 
-        //return empList (ObservableList of Employees)
-        return docList;
+    public static int addDoctor(Doctor doctor, String deptName){
+        try{
+            loadList();
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return -1;
+        }
+        for(Doctor d : doctorList){
+            if(d.equals(doctor))return d.getDoctorId();
+        }
+        doctor.setDoctorId(doctorList.size()+1);
+
+        int deptId = DepartmentDAO.addDepartment(new Department(deptName));
+
+        String insertStatement = "INSERT INTO " + TABLE_NAME + " VALUES ('"
+                + doctor.getDoctorId() + "', '"+ doctor.getNameSurname() + "', '"
+                + doctor.getPhoneNumber() + "', '" + deptId + "');";
+
+        try{
+            DBUtil.dbExecuteUpdate(insertStatement);
+            loadList();
+        }
+        catch(Exception e){
+            System.out.println(e);
+            return -1;
+        }
+        return doctorList.size();
     }
-    public static void insertDoc (String name, String department, String phoneNumber) throws SQLException, ClassNotFoundException {
-
-        String updateStmt = null;
-        if(phoneNumber == null) {
-           updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT) values ('" + name + "', '" + department + "')";
+    //Метод для полного обновления записи.
+    //обновляет на основании объекта класса Doctor
+    public static boolean updateDoctor(Doctor doctor, boolean nameChanged){
+        String updateStatementWithName = "UPDATE " + TABLE_NAME + " SET " + DOCTOR_NAME + "='" + doctor.getNameSurname() + "', "
+                + DOCTOR_PHONE + "='" + doctor.getPhoneNumber() + "', " + DEPARTMENT_ID + "='" + doctor.getDepartment().getDepartmentId() + "' WHERE "
+                + DOCTOR_ID + "='" + doctor.getDoctorId() +"';";
+        String updateStatement = "UPDATE " + TABLE_NAME + " SET "
+                + DOCTOR_PHONE + "='" + doctor.getPhoneNumber() + "', " + DEPARTMENT_ID + "='" + doctor.getDepartment().getDepartmentId() + "' WHERE "
+                + DOCTOR_ID + "='" + doctor.getDoctorId() +"';";
+        try{
+            if(nameChanged) {
+                DBUtil.dbExecuteUpdate(updateStatementWithName);
+            }
+            else{
+                DBUtil.dbExecuteUpdate(updateStatement);
+            }
+            loadList();
         }
-        else{
-            updateStmt = "INSERT INTO doctors (NAME, DEPARTMENT, PHONE) values ('" + name + "', '" + department + "', '" + phoneNumber + "')" ;
+        catch (Exception e){
+            System.out.println(e);
+            return false;
         }
+        return true;
 
-        try {
-            DBUtil.dbExecuteUpdate(updateStmt);
-        } catch (SQLException e) {
-            System.out.print("Error occurred while INSERT Operation: " + e);
-
-        }
     }
-    public static void updateDocName(String newName, String id) throws SQLException, ClassNotFoundException{
-        String updateStmt = "Update doctors set NAME = '" + newName +"'where DOC_ID = " + Integer.parseInt(id);
-        try {
-            DBUtil.dbExecuteUpdate(updateStmt);
-        } catch (SQLException e) {
-            System.out.print("Error occurred while UPDATE Operation: " + e);
 
-        }
-    }
-    public static void updateDocDepartment(String newDept, String id) throws SQLException, ClassNotFoundException{
-        String updateStmt = "Update doctors set DEPARTMENT = '" + newDept +"'where DOC_ID = " + Integer.parseInt(id);
-        try {
-            DBUtil.dbExecuteUpdate(updateStmt);
-        } catch (SQLException e) {
-            System.out.print("Error occurred while UPDATE Operation: " + e);
-
-        }
-    }
-    public static void updateDocPhoneN(String newPhoneN, String id) throws SQLException, ClassNotFoundException{
-        String updateStmt = "Update doctors set PHONE = '" + newPhoneN +"'where DOC_ID = " + Integer.parseInt(id);
-        try {
-            DBUtil.dbExecuteUpdate(updateStmt);
-        } catch (SQLException e) {
-            System.out.print("Error occurred while UPDATE Operation: " + e);
-
-        }
-    }
 }
+
