@@ -5,32 +5,30 @@ import Main.Lab;
 import com.sun.rowset.CachedRowSetImpl;
 
 public class DBUtil {
-private static Connection conn = null;
-private static String URL = null;
-private static String LOGIN = null;
-private static String PASSWORD = null;
+    private static Connection conn = null;
+    private static String URL = null;
+    private static String LOGIN = null;
+    private static String PASSWORD = null;
     private static Statement stmt;
-
     private static ResultSet resultSet;
     private static CachedRowSetImpl crs;
-public static String getURL(){
-    return "jdbc:mysql://" + Lab.getDbPort() +"/" + Lab.getDbName() + "?autoReconnect=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC";
-}
-public static String getLOGIN(){
-    return "root";
-}
-public static String getPASSWORD(){
-    return "root";
-}
+
+    public static String getURL(){
+        //return "jdbc:mysql://" + Lab.getDbPort() +"/" + Lab.getDbName() + "?autoReconnect=true&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC";
+        return "jdbc:postgresql:lab";
+    }
+    public static String getLOGIN(){
+        return "postgres";
+    }
+    public static String getPASSWORD(){
+        return "root";
+    }
 
     public static void dbConnect() {
     //throws SQLException, ClassNotFoundException
-
-
-
         try {
             conn = DriverManager.getConnection(DBUtil.getURL(), DBUtil.getLOGIN(), DBUtil.getPASSWORD());
-System.out.print("conn set");
+            System.out.print("conn set");
         } catch (SQLException e) {
             System.out.println("Connection Failed! Check output console" + e);
             e.printStackTrace();

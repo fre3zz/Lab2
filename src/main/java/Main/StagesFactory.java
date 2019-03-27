@@ -23,10 +23,12 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.io.*;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class StagesFactory {
     private static boolean addDoctorStageOpened = false;
@@ -84,7 +86,9 @@ public class StagesFactory {
     Кнопка сохранить добавляет нового врача, если выполняются условия
      */
      public static Stage addNewDocStage(TableView docTableView){
+         //При открытии окна подгружаем список отделений для выпадающего меню
 
+         ObservableList<Department> deptList = DepartmentDAO.getDepartmentList();
          Stage newStage = new Stage();
          newStage.setResizable(false);
          newStage.setTitle("Add new doc");
@@ -134,6 +138,9 @@ public class StagesFactory {
          TextField phoneTextField = new TextField();
          phoneTextField.setTooltip(new Tooltip("Телефон: +71234567890 или 12-34"));
          gp.add(phoneTextField, 1, 2);
+
+         //Для текстового поля с отделениями делаем автозаполнение
+         TextFields.bindAutoCompletion(departmentTextField, deptList.stream().map(e -> e.getDepartmantName()).collect(Collectors.toList()));
 
          //Кнопка для добавления врача
 

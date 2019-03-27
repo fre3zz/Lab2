@@ -17,6 +17,7 @@ import java.sql.SQLException;
 public class DepartmentDAO {
     private static final String DEPARTMENT_ID = "department_id";
     private static final String DEPARTMENT_NAME = "department_name";
+    private static final String DEPARTMENT_TABLE_NAME = "lab.department";
     private static ObservableList<Department> departmentList = FXCollections.observableArrayList();
 
     //метод для получения ссылки на лист
@@ -37,7 +38,7 @@ public class DepartmentDAO {
     //Возвращает false, если что-то пошло не так
 
     public static boolean loadList() throws SQLException, ClassNotFoundException {
-        String selectStatement = "SELECT * FROM department";
+        String selectStatement = "SELECT * FROM " + DEPARTMENT_TABLE_NAME;
         ResultSet rs = null;
         try{
             rs = DBUtil.dbExecuteQuery(selectStatement);
@@ -79,7 +80,7 @@ public class DepartmentDAO {
         }
 
         dept.setDepartmentId(departmentList.size()+1);
-        String insertStatement = "INSERT INTO department ("+DEPARTMENT_ID+","+DEPARTMENT_NAME+") " +
+        String insertStatement = "INSERT INTO "+DEPARTMENT_TABLE_NAME+" ("+DEPARTMENT_ID+","+DEPARTMENT_NAME+") " +
                 "VALUES ('" + dept.getDepartmentId() + "', '" + dept.getDepartmantName()+"');";
         try{
             DBUtil.dbExecuteUpdate(insertStatement);
@@ -96,7 +97,7 @@ public class DepartmentDAO {
     //Метод для формирования объекта Department по номеру id
 
     public static Department getDepartmentById(int id){
-        String selectStatement = "SELECT * FROM department WHERE " + DEPARTMENT_ID + "=" + id;
+        String selectStatement = "SELECT * FROM " +DEPARTMENT_TABLE_NAME+" WHERE " + DEPARTMENT_ID + "=" + id;
         ResultSet rs = null;
         Department department = new Department();
         try{

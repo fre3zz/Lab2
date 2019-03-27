@@ -25,7 +25,7 @@ public class DoctorDAO {
     private static final String DOCTOR_NAME = "doctor_name";
     private static final String DOCTOR_PHONE = "doctor_phone";
     private static final String DEPARTMENT_ID = "department_id";
-    private static final String TABLE_NAME = "doctor";
+    private static final String TABLE_NAME = "lab.doctor";
 
     private static ObservableList<Doctor> doctorList = FXCollections.observableArrayList();
 
@@ -49,7 +49,7 @@ public class DoctorDAO {
     //Возвращает false, если что-то пошло не так
 
     public static boolean loadList() throws SQLException, ClassNotFoundException {
-        String selectStatement = "SELECT * FROM " + TABLE_NAME + " INNER JOIN department ON doctor.department_id = department.department_id";
+        String selectStatement = "SELECT * FROM " + TABLE_NAME + " INNER JOIN lab.department ON doctor.department_id = department.department_id";
         ResultSet rs = null;
         try{
             rs = DBUtil.dbExecuteQuery(selectStatement);
